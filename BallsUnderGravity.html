@@ -47,8 +47,7 @@ Ball.prototype = {
   },
 
   update: function() {
-    this.y += this.vy;
-    this.vy += gravity;  // todo: limit bounce at some point or this value will be added
+    this.y +=
     if (this.y + this.r > canvas.height) {
       this.y = H - this.r;
       this.vy*=bounceFactor;
@@ -63,21 +62,21 @@ function clearCanvas() {
   ctx.clearRect(0, 0, W, H);
 }
 
-var balls = []; // define an array to hold the balls
+var balls = []; 
 
 canvas.addEventListener('click', function(event) {
-  var rect = this.getBoundingClientRect(),  // adjust mouse position
+  var rect = this.getBoundingClientRect(),  
       x = event.clientX - rect.left,
       y = event.clientY - rect.top;
-  balls.push(new Ball(x, y));               // add a new instance
+  balls.push(new Ball(x, y));
 });
 
 
 (function update() {
   clearCanvas();
   for (var i = 0; i<balls.length; i++) {
-    balls[i].draw(); // this will draw current ball
-    balls[i].update(); // this will update its position
+    balls[i].draw(); 
+    balls[i].update(); 
   }
 
   requestAnimationFrame(update);
