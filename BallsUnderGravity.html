@@ -6,10 +6,10 @@
 	<style>
 canvas {
 	background:#aaa;
-
 }
 }</style>
 </head>
+
 <body>
 	<canvas id="canvas" width=800 height=500 ></canvas>
 	<script>
@@ -24,17 +24,20 @@ canvas {
     ctx = canvas.getContext("2d"),
     W = canvas.width, 
     H = canvas.height,
-    gravity = .5,
-    bounceFactor = .8;
+    gravity = .3,
+    bounceFactor = .7;
+    var force = .2;
 
 function Ball(x, y) {
   this.x = x;
   this.y = y;
+  //this.mag= Math.sqrt(this.x*this.x+this.y*this.y)
   this.r = 15;
   this.color = color();
   this.vx = 0;
-  this.vy = 1;
+  this.vy = 0;
   this.count=0;
+  this.b=.8
 }
 
 Ball.prototype = {
@@ -47,36 +50,83 @@ Ball.prototype = {
   },
 
   update: function() {
-    this.y +=
-    if (this.y + this.r > canvas.height) {
-      this.y = H - this.r;
-      this.vy*=bounceFactor;
-      this.count++;
-      if(this.count<15)
-      this.vy=-this.vy;
+    
+for (i = 0; i < balls.length; i++) {
+    balls[i].vy += gravity
+    balls[i].x += balls[i].vx
+    balls[i].y += balls[i].vy
+
+    if (balls[i].x > W - balls[i].r) {
+        balls[i].x = W - balls[i].r
+        balls[i].vx *= -balls[i].b
     }
+    if (balls[i].x < balls[i].r) {
+        balls[i].x = balls[i].r
+        balls[i].vx *= -balls[i].b
+    }
+    if (balls[i].y + balls[i].r > H ) {
+        balls[i].y = H - balls[i].r
+        balls[i].vy *= -balls[i].b
+    }
+    if (balls[i].y < balls[i].r) {
+        balls[i].y = balls[i].r
+        balls[i].vy *= -balls[i].b
+    }
+
+    for (j = i + 1; j < balls.length; j++) {
+        var dx = balls[i].x - balls[j].x
+        var dy = balls[i].y - balls[j].y
+        var dist = Math.sqrt(dx * dx + dy * dy)
+        if (Math.abs(dx) + Math.abs(dy) != 0 && dist <= balls[i].r + balls[j].r) {
+            var ang = Math.atan2(dy, dx)
+
+            var sp1 = Math.sqrt(balls[i].vx*balls[i].vx + balls[i].vy*balls[i].vy);
+            var sp2 = Math.sqrt(balls[j].vx*balls[j].vx + balls[j].vy*balls[j].vy);
+
+            var dir1 = Math.atan2(balls[i].vy, balls[i].vx);
+            var dir2 = Math.atan2(balls[j].vy, balls[j].vx);
+
+            var vx1 = sp1 * Math.cos(dir1 - ang);
+            var vy1 = sp1 * Math.sin(dir1 - ang);
+            var vx2 = sp2 * Math.cos(dir2 - ang);
+            var vy2 = sp2 * Math.sin(dir2 - ang);
+
+            var finalvx1 = ((2 * balls[j].r) * vx2) / (balls[i].r + balls[j].r);
+            var finalvx2 = ((2 * balls[i].r) * vx1) / (balls[i].r + balls[j].r);
+            var finalvy1 = vy1;
+            var finalvy2 = vy2;
+
+            balls[i].vx = Math.cos(ang) * finalvx1 + Math.cos(ang + Math.PI/2) * finalvy1;
+            balls[i].vy = Math.sin(ang) * finalvx1 + Math.sin(ang + Math.PI/2) * finalvy1;
+            
+            balls[j].vx = Math.cos(ang)* finalvx2 + Math.cos(ang + Math.PI/2) * finalvy2;
+            balls[j].vy = Math.sin(ang) * finalvx2 + Math.sin(ang + Math.PI/2) * finalvy2;
+        }
+    }
+
   }
+}
 };
 
 function clearCanvas() {
   ctx.clearRect(0, 0, W, H);
 }
 
-var balls = []; 
+var balls = [];
 
 canvas.addEventListener('click', function(event) {
   var rect = this.getBoundingClientRect(),  
       x = event.clientX - rect.left,
       y = event.clientY - rect.top;
-  balls.push(new Ball(x, y));
+  balls.push(new Ball(x, y));               
 });
 
 
 (function update() {
   clearCanvas();
   for (var i = 0; i<balls.length; i++) {
-    balls[i].draw(); 
-    balls[i].update(); 
+    balls[i].draw();
+    balls[i].update();
   }
 
   requestAnimationFrame(update);
